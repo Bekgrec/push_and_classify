@@ -1,0 +1,58 @@
+model:
+  path: /home/baris/Workspace/push-to-see/saved_models/mask-rg
+  # set  'file:' to 'new' for training from scratch, 'pretrained' for transfer learning,
+  # or the name of the save model file which is placed on the above path folder.
+  file: new #new #my_model_inria_v0__epoch_no_19_2020-08-28.09:59:03.pth #new  #first_training/my_model_v0__epoch_no_19_2020-07-10.13:04:40.pth
+
+  settings:
+    epochs: 20
+    learning_rate: 0.0001
+    batch_size: 5
+    backbone: resnet50
+    backbone_pretrained: True
+    cuda_available: True
+
+
+dataset:
+  path: ~/Database_vrep_inria_3/ #/home/baris/Database_vrep_inria # The folders and files in the subsections below should be placed in this folder.
+  images: depth_ims/NUMPY
+  masks: segmentation_masks/PNG
+  masks_info: segmentation_masks/NUMPY
+  train_indices: train_indices.npy
+  test_indices: validation_indices.npy
+  is_depth: True   # if this flag is set 'True', trainer will look for depth numpy arrays in 'images' folder
+  data_augmentation: False
+
+saving:
+  path: ../../../../saved_models
+  model_name: my_model_inria_v2_0ep_
+  config_name:
+
+#model:
+#  path: saved_models
+#  # set  'file:' to 'new' for training from scratch, 'pretrained' for transfer learning,
+#  # or the name of the save model file which is placed on the above path folder.
+#  file: my_model_v0__epoch_no_19_2020-07-10.13:04:40.pth
+#
+#  settings:
+#    epochs: 5
+#    learning_rate: 0.0001
+#    batch_size: 5
+#    backbone: resnet50
+#    backbone_pretrained: True
+#    cuda_available: True
+#
+#
+#dataset:
+#  path: /home/baris/Database_vrep/clean_subset # The folders and files in the subsections below should be placed in this folder.
+#  images: depth_ims_png
+#  masks: segmentation_masks
+#  train_indices: train_indices.npy
+#  test_indices: test_indices_small_subset_from_orig.npy #test_indices.npy
+#  is_depth: False   # if this flag is set 'True', trainer will look for depth numpy arrays in 'images' folder
+#  data_augmentation: False
+#
+#saving:
+#  path: saved_models
+#  model_name: my_model_v0_
+#  config_name:

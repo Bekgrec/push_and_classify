@@ -1,0 +1,22 @@
+overview:
+  num_classes: 3
+
+# in mask rcnn
+class_label:
+  # convex_0 in vrep is an instance of scissor
+  scissor: 1
+  banana: 2
+  spoon: 3
+
+convex_class:
+  0: scissor
+  1: scissor
+  2: scissor
+  3: banana
+  4: banana
+  5: banana
+  6: spoon
+  7: spoon
+  8: spoon
+  
+  
