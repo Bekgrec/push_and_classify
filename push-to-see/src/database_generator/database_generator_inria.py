@@ -3,13 +3,14 @@ import select
 import struct
 import time
 import os
+import sys
 
 import matplotlib
 import numpy as np
 # import utils
 import torch
 
-from simulation import vrep
+
 import matplotlib.pyplot as plt
 import yaml
 import cv2
@@ -18,6 +19,10 @@ from PIL import Image
 import pylab as plt
 import pandas as pd
 import imageio
+
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(cur_dir, "../.."))
+from simulation import vrep
 
 
 class DatabaseGenerator(object):
