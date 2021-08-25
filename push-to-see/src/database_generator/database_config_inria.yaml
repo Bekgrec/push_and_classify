@@ -1,13 +1,14 @@
 database:
   path: ~/Database_vrep_inria_3/ # Change this, if you want to save your dataset into another location
   settings:
-    database_size: 2502 # Number of scenes to generate
-    max_num_obj: 7 # Maximum number of objects dropped per scene
-    min_num_obj: 5 # Minimum number of objects dropped per scene
+    database_size: 10000 # Number of scenes to generate
+    max_num_obj: 20 # Maximum number of objects dropped per scene
+    min_num_obj: 10 # Minimum number of objects dropped per scene
 #    total_num_obj: 6 # Subset of objects that will be put into the random selection pool
                       # (e.g., if set to 50, then first 50 object meshes in object_path will be used - from 000.urdf to 049.urdf)
     drop_height: 0.1
     remove_container: False
+    generated: 1111
 
 
 #meshes:

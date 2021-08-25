@@ -29,7 +29,10 @@ class MaskRGNetwork(nn.Module):
     def __init__(self, config):
         super(MaskRGNetwork, self).__init__()
 
-        self.training = False # check if this necessary
+        obj_config = os.path.abspath(os.path.join(os.getcwd(), "../../src")) + '/object_class.yaml'
+        with open(obj_config) as f:
+            self.obj_inf = yaml.load(f, Loader=yaml.FullLoader)
+        self.total_obj_class = self.obj_inf['overview']['num_classes']
 
         # read configuration
         if config['model']['file'] == 'new':
@@ -40,7 +43,8 @@ class MaskRGNetwork(nn.Module):
             self.m_pretrained = True
         else:
             use_old_weights = True
-            self.weigths_path = os.path.join(config['model']['path'], config['model']['file'])
+
+            self.weigths_path = os.path.expanduser(os.path.join(config['model']['path'], config['model']['file']))
 
         self.num_epochs = config['model']['settings']['epochs']
         self.lr = config['model']['settings']['learning_rate']
@@ -54,6 +58,7 @@ class MaskRGNetwork(nn.Module):
         # self.test_indices = np.load(os.path.join(config['dataset']['path'], config['dataset']['test_indices']))
 
         self.saving_path = config['saving']['path']
+        self.saving_path = os.path.expanduser(self.saving_path)
         self.saving_prefix = config['saving']['model_name']
 
         if is_cuda:
@@ -86,14 +91,15 @@ class MaskRGNetwork(nn.Module):
         self.input_features = self.mask_r_cnn.roi_heads.box_predictor.cls_score.in_features
 
         # replace the pre-trained head with a new one --> category-agnostic so number of classes=2
-        self.mask_r_cnn.roi_heads.box_predictor = FastRCNNPredictor(self.input_features, 4)
+        # + 1 for background
+        self.mask_r_cnn.roi_heads.box_predictor = FastRCNNPredictor(self.input_features, self.total_obj_class + 1)
 
         # no w get the number of input features for the mask classifier
         self.input_features_mask = self.mask_r_cnn.roi_heads.mask_predictor.conv5_mask.in_channels
 
         hidden_layer = 256
         # and replace the mask predictor with a new one
-        self.mask_r_cnn.roi_heads.mask_predictor = MaskRCNNPredictor(self.input_features_mask, hidden_layer, 4)
+        self.mask_r_cnn.roi_heads.mask_predictor = MaskRCNNPredictor(self.input_features_mask, hidden_layer, self.total_obj_class + 1)
 
         self.mask_r_cnn.to(self.device)
         # self.mask_r_cnn = MaskRCNN(backbone=self.backbone, num_classes=2, rpn_anchor_generator=self.anchors)
@@ -136,11 +142,15 @@ class MaskRGNetwork(nn.Module):
     def load_weights(self):
             # this should be called after the initialisation of the model
             print(self.weigths_path)
-            self.mask_r_cnn.load_state_dict(torch.load(self.weigths_path))
+            if not torch.cuda.is_available():
+                self.mask_r_cnn.load_state_dict(torch.load(self.weigths_path, map_location=torch.device('cpu')))
+            else:
+                self.mask_r_cnn.load_state_dict(torch.load(self.weigths_path))
 
     def set_data(self, data,  is_test=False):
 
         data_subset = td.Subset(data, data.train_indices) if not is_test else td.Subset(data, data.test_indices)
+
 
         # init a data loader either for training or testing
         # multiprocessing for data loading (num_workers) is not recommended for CUDA, so automatic memory pining

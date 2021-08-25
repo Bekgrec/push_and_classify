@@ -1,14 +1,23 @@
 overview:
-  num_classes: 3
+  num_classes: 10
+  total_convex: 30
 
 # in mask rcnn
 class_label:
-  # convex_0 in vrep is an instance of scissor
   scissor: 1
   banana: 2
   spoon: 3
+  marker_pen: 4
+  hammer: 5
+  clamp: 6
+  screwdriver: 7
+  woodblock: 8
+  wrench: 9
+  meatcan: 10
+
 
 convex_class:
+  # convex_0 in vrep is an instance of scissor
   0: scissor
   1: scissor
   2: scissor
@@ -18,5 +27,27 @@ convex_class:
   6: spoon
   7: spoon
   8: spoon
-  
+  9: marker_pen
+  10: marker_pen
+  11: marker_pen
+  12: hammer
+  13: hammer
+  14: hammer
+  15: clamp
+  16: clamp
+  17: clamp
+  18: screwdriver
+  19: screwdriver
+  20: screwdriver
+  21: woodblock
+  22: woodblock
+  23: woodblock
+  24: wrench
+  25: wrench
+  26: wrench
+  27: meatcan
+  28: meatcan
+  29: meatcan
+
+
   

@@ -3,6 +3,7 @@ from dataset import PushAndGraspDataset
 import yaml
 import numpy as np
 import torch
+import os
 
 import torchvision.transforms as T
 
@@ -14,19 +15,15 @@ def main():
         configuration = yaml.load(f, Loader=yaml.FullLoader)
 
 
-    img = Image.open('../../../../Database_vrep_inria_3/depth_ims/PNG/depth_image_000009.png').convert('RGB')
-    img.show()
-
+    # img = Image.open('../../../../Database_vrep_inria_3/depth_ims/PNG/depth_image_000009.png').convert('RGB')
+    # img.show()
 
     # create the model
     model = MaskRGNetwork(configuration)
-    #print(model.state_dict().keys())
-
-    #model.eval_single_img(img)
-
 
     # create dataset objects and set the model
     dataset = PushAndGraspDataset(configuration)
+    print(dataset.__len__())
     #dataset.__getitem__(0)
     #print(dataset.__dict__)
 
@@ -53,7 +50,7 @@ def main():
     # depth_tensor = tt(depth_image)
     # depth_tensor = depth_tensor.cuda()
     # testres = model.eval_single_img([depth_tensor])
-
+    '''
     tt = T.ToTensor()
     depth_tensor = tt(img)
     testres = model.eval_single_img([depth_tensor])
@@ -63,7 +60,7 @@ def main():
         print(k, np.shape(y))
     print(testres[0]['scores'])
     model.print_boxes(img, testres, score_threshold=0.5)
-
+    '''
     # # read a GT mask and reformat
     # gt = cv2.imread(gt_path)
     # gt = np.asarray(gt)

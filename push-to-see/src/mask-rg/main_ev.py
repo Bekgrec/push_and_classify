@@ -9,13 +9,13 @@ import torch
 import matplotlib.pyplot as plt
 from rewards import RewardGenerator
 
-img_path = '/home/baris/Database_vrep_inria/depth_ims/NUMPY/depth_012500.npy'
-img_rgb_path = '/home/baris/Database_vrep_inria/color_ims/color_image_012500.png'
-gt_path = '/home/baris/Database_vrep_inria/segmentation_masks/PNG/segmask_image_012500.png'
+img_path = '/home/unhappy/Database_vrep_inria_3/depth_ims/NUMPY/depth_000942.npy'
+img_rgb_path = '/home/unhappy/Database_vrep_inria_3/color_ims/color_image_000942.png'
+gt_path = '/home/unhappy/Database_vrep_inria_3/segmentation_masks/PNG/segmask_image_000942.png'
 
 def main():
 
-    with open('model_config.yaml') as f:
+    with open('../../model_config.yaml') as f:
         configuration = yaml.load(f, Loader=yaml.FullLoader)
 
     # create the model
@@ -51,7 +51,8 @@ def main():
     depth_image = np.repeat(depth_image.reshape(1024, 1024, 1), 3, axis=2)
     tt = T.ToTensor()
     depth_tensor = tt(depth_image)
-    depth_tensor = depth_tensor.cuda()
+    if torch.cuda.is_available():
+        depth_tensor = depth_tensor.cuda()
 
     testres = model.eval_single_img([depth_tensor])
     #

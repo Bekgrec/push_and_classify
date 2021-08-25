@@ -34,6 +34,8 @@ class DatabaseGenerator(object):
         with open(obj_config) as f:
             self.obj_inf = yaml.load(f, Loader=yaml.FullLoader)
         self.convex_class = self.obj_inf['convex_class']
+        self.total_convex = self.obj_inf['overview']['total_convex']
+
         print(self.convex_class)
 
         self.handle_objclass, self.pixel_class = dict(), dict()
@@ -59,6 +61,8 @@ class DatabaseGenerator(object):
         self.SAVE_NUMPY = config['data']['save_numpy']
         self.SAVE_PNG = config['data']['save_png']
         self.SAVE_COLOR = config['data']['save_color_img']
+
+        self.generated = config['database']['settings']['generated']
 
         self.drop_limits = np.asarray([[-0.6, -0.4], [-0.15, 0.15], [-0.2, -0.1]])
 
@@ -130,25 +134,26 @@ class DatabaseGenerator(object):
         self._folder_config()
         init_time = time.time()
 
-        success_saved = 99
+        next_scene = self.generated + 1
         # for i in range(0, self.DATABASE_SIZE):
-        while success_saved < 1000:
-        #for i in range(30):
+        while next_scene < self.DATABASE_SIZE:
+            # empty memory from last scene
+            self.handle_objclass, self.pixel_class = dict(), dict()
             session_start = time.time()
             # np.random.seed()
             curr_num_obj = np.random.random_integers(self.NUM_OBJ_MIN, self.NUM_OBJ_MAX)
 
-            print('Scene no %06d - Number of objects in the current scene --->' % success_saved, curr_num_obj)
+            print('Scene no %06d - Number of objects in the current scene --->' % next_scene, curr_num_obj)
             ret = self._add_objects(curr_num_obj)
 
             if not ret[0] == -1:
-                self.save_scene(success_saved)
-                success_saved += 1
+                self.save_scene(next_scene)
+                next_scene += 1
             else:
                 print("ERROR: Current scene couldn't save!")
-                err_trials.append(success_saved)
+                err_trials.append(next_scene)
 
-            np.save(self.scene_info_dir + "scene_info_%06d.npy" % success_saved, np.asarray(ret[1]))
+            np.save(self.scene_info_dir + "scene_info_%06d.npy" % next_scene, np.asarray(ret[1]))
             self.restart_sim()
             session_end = time.time() - session_start
             print('Elapsed time for this current scene --> {: .02f} seconds'.format(session_end),
@@ -243,7 +248,7 @@ class DatabaseGenerator(object):
         for i in range(0, objects.size):
             # ----------------- #
             label = self.obj_inf['class_label'][self.handle_objclass[objects[i]]]
-            print(label)
+            #print(label)
             pix_lab.append([objects[i], label])
 
             #pix_lab.append(self.obj_inf['class_label'][self.handle_objclass[objects[i]]])
@@ -342,7 +347,7 @@ class DatabaseGenerator(object):
         # 18 INRIA objects x 4 = 72 (convex_0 to convex_71)
         isOscillating = 1
         print(f'num_obi_heap {num_obj_heap}')
-        objects = np.random.choice(range(0, 8), num_obj_heap, replace=False)
+        objects = np.random.choice(range(0, self.total_convex), num_obj_heap, replace=False)
         shapes = []
         objects_info = []
         print(f'add_objects object {objects}')
@@ -351,6 +356,7 @@ class DatabaseGenerator(object):
             _, handle_i = vrep.simxGetObjectHandle(self.sim_client, f'convex_{i}', vrep.simx_opmode_blocking)
             obj_class = self.convex_class[i]
             self.handle_objclass[handle_i] = obj_class
+        print(f'handle_objclass in _add start{self.handle_objclass}')
 
         for object_idx in objects:
 
@@ -422,6 +428,18 @@ class DatabaseGenerator(object):
                                                                                 vrep.simx_opmode_blocking)
                 time.sleep(0.05)
                 # print(ret_i)
+                # wait responose from remote api
+                while not ret_i:
+                    time.sleep(0.03)
+                    ret_r, ret_i, ret_f, ret_s, ret_b = vrep.simxCallScriptFunction(self.sim_client,
+                                                                                'remoteApiCommandServer',
+                                                                                vrep.sim_scripttype_childscript,
+                                                                                'checkMotion',
+                                                                                [len(shapes)],
+                                                                                [0.0],
+                                                                                shapes,
+                                                                                bytearray(),
+                                                                                vrep.simx_opmode_blocking)
                 isOscillating = ret_i[0]
 
 

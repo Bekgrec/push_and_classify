@@ -15,16 +15,25 @@ class PushAndGraspDataset(object):
 
         # read configuration
         self.root = config['dataset']['path']
-        self.imgs_path = os.path.join(config['dataset']['path'], config['dataset']['images'])
-        self.masks_path = os.path.join(config['dataset']['path'], config['dataset']['masks'])
-        self.masks_info_path = os.path.join(config['dataset']['path'], config['dataset']['masks_info'])
+        self.imgs_path = os.path.expanduser(os.path.join(config['dataset']['path'], config['dataset']['images']))
+        self.masks_path = os.path.expanduser(os.path.join(config['dataset']['path'], config['dataset']['masks']))
+        self.masks_info_path = os.path.expanduser(os.path.join(config['dataset']['path'], config['dataset']['masks_info']))
         self.transforms = config['dataset']['data_augmentation']
         self.is_depth = config['dataset']['is_depth']
 
-        self.train_indices = np.load(os.path.join(config['dataset']['path'], config['dataset']['train_indices']),
-                                     allow_pickle=True)
-        self.test_indices = np.load(os.path.join(config['dataset']['path'], config['dataset']['test_indices']),
-                                    allow_pickle=True)
+        train_instances_num = config['model']['settings']['train_instances']
+        test_instances_num = config['model']['settings']['test_instances']
+        total_instances_num = config['model']['settings']['total_instance']
+        self.train_indices = np.random.choice(range(0, total_instances_num), train_instances_num, replace=False)
+        self.test_indices = np.random.choice(range(0, total_instances_num), test_instances_num, replace=False)
+
+
+        #self.train_indices = np.load(os.path.expanduser(os.path.join(config['dataset']['path'], config['dataset']['train_indices'])),
+        #                             allow_pickle=True)
+        #self.test_indices = np.load(os.path.expanduser(os.path.join(config['dataset']['path'], config['dataset']['test_indices'])),
+        #                            allow_pickle=True)
+
+
 
         # get a list of images and GTs
         self.imgs = list(sorted(os.listdir(self.imgs_path)))
@@ -79,6 +88,7 @@ class PushAndGraspDataset(object):
         masks = np.zeros((num_objs, 1024, 1024), dtype=np.uint8)
         for i in range(num_objs):
             # masks[i][np.where(mask == i+1)] = 1
+            # masks[i][np.where(mask == pixel_label[i][0])] = 1
             masks[i][np.where(mask == pixel_label[i][0])] = 1
             # masks[i][np.where(mask != pixel_label[i][0])] = 0
         # print(np.shape(masks))

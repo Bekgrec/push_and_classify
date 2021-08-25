@@ -1,8 +1,8 @@
 model:
-  path: /home/baris/Workspace/push-to-see/saved_models/mask-rg
+  path: ~/saved_models/
   # set  'file:' to 'new' for training from scratch, 'pretrained' for transfer learning,
   # or the name of the save model file which is placed on the above path folder.
-  file: new #new #my_model_inria_v0__epoch_no_19_2020-08-28.09:59:03.pth #new  #first_training/my_model_v0__epoch_no_19_2020-07-10.13:04:40.pth
+  file: new #my_model_inria_v2_0ep__epoch_no_19_2021-08-24.11:59:14.pth
 
   settings:
     epochs: 20
@@ -10,7 +10,11 @@ model:
     batch_size: 5
     backbone: resnet50
     backbone_pretrained: True
-    cuda_available: True
+    cuda_available: False
+    train_instances: 800
+    test_instances: 248
+    # last png name + 1
+    total_instance: 1111
 
 
 dataset:
@@ -24,7 +28,7 @@ dataset:
   data_augmentation: False
 
 saving:
-  path: ../../../../saved_models
+  path: ~/saved_models
   model_name: my_model_inria_v2_0ep_
   config_name:
 
