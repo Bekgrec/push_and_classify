@@ -9,9 +9,9 @@ import torch
 import matplotlib.pyplot as plt
 from rewards import RewardGenerator
 
-img_path = '/home/unhappy/Database_vrep_inria_3/depth_ims/NUMPY/depth_000942.npy'
-img_rgb_path = '/home/unhappy/Database_vrep_inria_3/color_ims/color_image_000942.png'
-gt_path = '/home/unhappy/Database_vrep_inria_3/segmentation_masks/PNG/segmask_image_000942.png'
+img_path = '/home/ubuntu/Database_vrep_inria_3/depth_ims/NUMPY/depth_000942.npy'
+img_rgb_path = '/home/ubuntu/Database_vrep_inria_3/color_ims/color_image_000942.png'
+gt_path = '/home/ubuntu/Database_vrep_inria_3/segmentation_masks/PNG/segmask_image_000942.png'
 
 def main():
 
@@ -59,6 +59,7 @@ def main():
     # # read a GT mask and reformat
     gt = cv2.imread(gt_path)
     gt = np.asarray(gt)
+    print(np.shape(gt))
     gt = gt[:, :, :1]
     gt = np.squeeze(gt, axis=2)
     #
