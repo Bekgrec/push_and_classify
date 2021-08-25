@@ -8,12 +8,17 @@ from PIL import Image
 import torch
 import matplotlib.pyplot as plt
 from rewards import RewardGenerator
+import os
 
-img_path = '/home/ubuntu/Database_vrep_inria_3/depth_ims/NUMPY/depth_000942.npy'
-img_rgb_path = '/home/ubuntu/Database_vrep_inria_3/color_ims/color_image_000942.png'
-gt_path = '/home/ubuntu/Database_vrep_inria_3/segmentation_masks/PNG/segmask_image_000942.png'
 
 def main():
+
+    img_path = '~/Database_vrep_inria_3/depth_ims/NUMPY/depth_000942.npy'
+    img_path = os.path.expanduser(img_path)
+    img_rgb_path = '~/Database_vrep_inria_3/color_ims/color_image_000942.png'
+    img_rgb_path = os.path.expanduser(img_rgb_path)
+    gt_path = '~/Database_vrep_inria_3/segmentation_masks/PNG/segmask_image_000942.png'
+    gt_path = os.path.expanduser(gt_path)
 
     with open('../../model_config.yaml') as f:
         configuration = yaml.load(f, Loader=yaml.FullLoader)
