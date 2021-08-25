@@ -10,7 +10,7 @@ model:
     batch_size: 5
     backbone: resnet50
     backbone_pretrained: True
-    cuda_available: False
+    cuda_available: True
     train_instances: 800
     test_instances: 248
     # last png name + 1
