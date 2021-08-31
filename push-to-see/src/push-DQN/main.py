@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import sys
-sys.path.append('/home/baris/Workspace/push-to-see/src/mask-rg')
-from mask_rg import MaskRG
 import time
 import os
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(cur_dir, "../mask-rg"))
+# successfully imported MaskRG
+from mask_rg import MaskRG
 import random
 import threading
 import matplotlib.pyplot as plt
@@ -21,8 +23,9 @@ import scipy.misc
 import yaml
 
 
-#TODO don't add the absolute path here!
-CONF_PATH = '/home/baris/Workspace/push-to-see/push-DQN_config.yaml'
+
+
+CONF_PATH = os.path.abspath(os.path.join(os.getcwd(), "../..")) + '/push-DQN_config.yaml'
 
 class BColors:
     HEADER = '\033[95m'
@@ -41,6 +44,7 @@ def main():
 
     # plt.ion()
     mask_rg = MaskRG(config['detection_thresholds']['confidence_threshold'], config['detection_thresholds']['mask_threshold'])
+    print(mask_rg)
     session_success_threshold = config['detection_thresholds']['session_success_threshold']
 
     snapshot_file = os.path.join(config['model']['path'], config['model']['file']) if config['model']['file'] != 'new' else None
@@ -121,6 +125,7 @@ def main():
     # Parallel thread to process network output and execute actions
     # -------------------------------------------------------------
     def process_actions():
+        print('process_actions called')
         while True:
             if nonlocal_variables['executing_action']:
 
@@ -249,21 +254,21 @@ def main():
             print(BColors.WARNING + 'This is the zeroth iteration! '
                                     'Mask-RG Values below will be used in the first iteration!' + BColors.ENDC)
             # Get ground truth segmentation masks
-            color_m_rg, depth_m_rg, [segmentation_mask, num_objects] = robot.get_data_mask_rg()
+            color_m_rg, depth_m_rg, [segmentation_mask, num_objects, pixel_class] = robot.get_data_mask_rg()
             # print(num_objects)
             plt.imsave('ground_truth.png', segmentation_mask)
             plt.imsave('color_img.png', color_m_rg)
             plt.imsave('depth_img.png', depth_m_rg)
 
             # set the mask rcnn reward generator with the current depth and gt
-            mask_rg.set_reward_generator(depth_m_rg, segmentation_mask)
+            mask_rg.set_reward_generator(depth_m_rg, segmentation_mask, pixel_class)
 
             # get the rewards predictions
             pred_ids, seg_reward, err_rate = mask_rg.get_current_rewards()
             printout = mask_rg.print_segmentation(pred_ids)
             plt.imsave('mask_pred_diff.png', printout)
 
-            # all_masks = mask_rg.print_masks()
+            # all_masks = mask-rg.print_masks()
             # plt.imsave('mask_pred_all.png', all_masks)
 
             #TODO check below line
@@ -552,7 +557,7 @@ def main():
             # Get RGB-D image
             color_img_action, depth_img_raw_action = robot.get_camera_data()
             # Get ground truth segmentation masks
-            color_m_rg_act, depth_m_rg_act, [segmentation_mask_action, num_objects_action] = robot.get_data_mask_rg()
+            color_m_rg_act, depth_m_rg_act, [segmentation_mask_action, num_objects_action, pixel_class] = robot.get_data_mask_rg()
             plt.imsave('ground_truth.png', segmentation_mask_action)
             plt.imsave('color_img.png', color_m_rg_act)
             plt.imsave('depth_img.png', depth_m_rg_act)
@@ -560,13 +565,13 @@ def main():
             # some conversions to get the same depth arrays that were used in the training of mask-rg
             # depth_converted_action = np.round((depth_img_raw_action * 10000) / 255).astype(np.uint8)
             # depth_converted_action = np.repeat(depth_converted_action.reshape(480, 640, 1), 3, axis=2)
-            mask_rg.set_reward_generator(depth_m_rg_act, segmentation_mask_action)
+            mask_rg.set_reward_generator(depth_m_rg_act, segmentation_mask_action, pixel_class)
 
             pred_ids, seg_reward, err_rate = mask_rg.get_current_rewards()
             printout = mask_rg.print_segmentation(pred_ids)
             plt.imsave('mask_pred_diff.png', printout)
             print('Number of the objects left in the scene after pushing action -->', num_objects_action.size - 1)
-            # all_masks = mask_rg.print_masks()
+            # all_masks = mask-rg.print_masks()
             # plt.imsave('mask_pred_all.png', all_masks)
 
         trainer.iteration += 1

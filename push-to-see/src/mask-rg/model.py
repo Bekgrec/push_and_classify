@@ -141,7 +141,7 @@ class MaskRGNetwork(nn.Module):
 
     def load_weights(self):
             # this should be called after the initialisation of the model
-            print(self.weigths_path)
+            # print(self.weigths_path)
             if not torch.cuda.is_available():
                 self.mask_r_cnn.load_state_dict(torch.load(self.weigths_path, map_location=torch.device('cpu')))
             else:

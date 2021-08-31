@@ -1,11 +1,24 @@
 import time
 import numpy as np
 import utils
+import os
+import sys
+import yaml
+
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(cur_dir, "../.."))
 from simulation import vrep
 import matplotlib.pyplot as plt
 
 class Robot(object):
     def __init__(self, min_num_obj, max_num_obj, workspace_limits):
+
+        obj_config = os.path.abspath(os.path.join(os.getcwd(), "..")) + '/object_class.yaml'
+        with open(obj_config) as f:
+            self.obj_inf = yaml.load(f, Loader=yaml.FullLoader)
+        self.convex_class = self.obj_inf['convex_class']
+        self.total_convex = self.obj_inf['overview']['total_convex']
+        self.handle_objclass, self.pixel_class = dict(), dict()
 
         self.workspace_limits = workspace_limits
 
@@ -104,9 +117,7 @@ class Robot(object):
         curr_num_obj = np.random.random_integers(self.min_num_obj, self.max_num_obj)
         print('NUMBER OF OBJECTS DROPPED (range: {:d} - {:d}) --> {:d},'.format(self.min_num_obj, self.max_num_obj,
                                                                                curr_num_obj))
-        # self.add_objects(curr_num_obj)
-        asdasd= 1
-
+        self.add_objects(curr_num_obj)
 
 
     def check_sim(self):
@@ -146,7 +157,10 @@ class Robot(object):
 
         ret, res, data = vrep.simxGetVisionSensorImage(self.sim_client, mask_cam_handle, 0,
                                                       vrep.simx_opmode_oneshot_wait)
-
+        while ret != 0:
+            ret, res, data = vrep.simxGetVisionSensorImage(self.sim_client, mask_cam_handle, 0,
+                                                      vrep.simx_opmode_oneshot_wait)
+        print(np.shape(data))
         seg_mask_temp = np.reshape(data, (res[1], res[0], 3))
         seg_mask_temp = seg_mask_temp[:, :, :1]
         seg_mask_temp = np.reshape(seg_mask_temp, (res[1], res[0]))
@@ -160,13 +174,22 @@ class Robot(object):
         objects = np.delete(elements, background_index)
         objects = np.sort(objects)
 
+        pix_lab = []
+
         for i in range(0, objects.size):
+            label = self.obj_inf['class_label'][self.handle_objclass[objects[i]]]
+            pix_lab.append([objects[i], label])
             # if not objects[i] == 0:
-            new_mask[np.where(seg_mask == objects[i])] = i + 1
+            pixel_value = 255 - i
+            obj_class = self.handle_objclass[objects[i]]
+            self.pixel_class[pixel_value] = obj_class
+            new_mask[np.where(seg_mask == objects[i])] = objects[i]
+        saved_infor = np.array(pix_lab)
 
         new_mask = np.flip(new_mask, axis=0)
         objs = np.unique(new_mask)
-        return new_mask, objs
+        print(f'objs pixel in mask {objs}')
+        return new_mask, objs, saved_infor
 
     # def _get_segmentation_mask(self, mask_cam_handle):
     #
@@ -232,11 +255,17 @@ class Robot(object):
 
         # 18 INRIA objects x 4 = 72 (convex_0 to convex_71)
         isOscillating = 0
-        objects = np.random.choice(range(0, 72), num_obj_heap, replace=False)
-        # 6*10 --> basic meshes
-        # objects = np.random.choice(range(0, 60), num_obj_heap, replace=False)
-        # 2*13 --> adversarial
-        # objects = np.random.choice(range(0, 26), num_obj_heap, replace=False)
+        objects = np.random.choice(range(0, self.total_convex), num_obj_heap, replace=False)
+
+        for i in objects:
+            _, handle_i = vrep.simxGetObjectHandle(self.sim_client, f'convex_{i}', vrep.simx_opmode_blocking)
+            while handle_i == 0:
+                _, handle_i = vrep.simxGetObjectHandle(self.sim_client, f'convex_{i}', vrep.simx_opmode_blocking)
+            obj_class = self.convex_class[i]
+            self.handle_objclass[handle_i] = obj_class
+        print(f'handle_objclass in _add start{self.handle_objclass}')
+
+
         shapes = []
         objects_info = []
 
@@ -291,6 +320,7 @@ class Robot(object):
                                                                             shapes,
                                                                             bytearray(),
                                                                             vrep.simx_opmode_blocking)
+            print('Oscillating')
             time.sleep(0.05)
             isOscillating = ret_i[0]
 
@@ -300,6 +330,10 @@ class Robot(object):
 
         # Get color image from simulation --> for mask-rg
         sim_ret, resolution, raw_image_gt = vrep.simxGetVisionSensorImage(self.sim_client, self.cam_handle_ortho, 0,
+                                                                          vrep.simx_opmode_blocking)
+        # encounted sim_ret = 3, nothing returned as empty color img
+        while sim_ret != 0:
+            sim_ret, resolution, raw_image_gt = vrep.simxGetVisionSensorImage(self.sim_client, self.cam_handle_ortho, 0,
                                                                           vrep.simx_opmode_blocking)
         color_img_m_rg = np.asarray(raw_image_gt)
         color_img_m_rg.shape = (resolution[1], resolution[0], 3)
@@ -312,6 +346,10 @@ class Robot(object):
 
         # Get depth image from simulation
         sim_ret, resolution, depth_buffer_gt = vrep.simxGetVisionSensorDepthBuffer(self.sim_client,
+                                                                                   self.cam_handle_ortho,
+                                                                                   vrep.simx_opmode_blocking)
+        while sim_ret != 0:
+            sim_ret, resolution, depth_buffer_gt = vrep.simxGetVisionSensorDepthBuffer(self.sim_client,
                                                                                    self.cam_handle_ortho,
                                                                                    vrep.simx_opmode_blocking)
         depth_img_m_rg = np.asarray(depth_buffer_gt)
@@ -333,6 +371,8 @@ class Robot(object):
 
         # Get color image from simulation
         sim_ret, resolution, raw_image = vrep.simxGetVisionSensorImage(self.sim_client, self.cam_handle, 0, vrep.simx_opmode_blocking)
+        while sim_ret != 0:
+            sim_ret, resolution, raw_image = vrep.simxGetVisionSensorImage(self.sim_client, self.cam_handle, 0, vrep.simx_opmode_blocking)
         color_img = np.asarray(raw_image)
         color_img.shape = (resolution[1], resolution[0], 3)
         color_img = color_img.astype(np.float)/255
@@ -343,6 +383,8 @@ class Robot(object):
 
         # Get depth image from simulation
         sim_ret, resolution, depth_buffer = vrep.simxGetVisionSensorDepthBuffer(self.sim_client, self.cam_handle, vrep.simx_opmode_blocking)
+        while sim_ret != 0:
+            sim_ret, resolution, depth_buffer = vrep.simxGetVisionSensorDepthBuffer(self.sim_client, self.cam_handle, vrep.simx_opmode_blocking)
         depth_img = np.asarray(depth_buffer)
         depth_img.shape = (resolution[1], resolution[0])
         depth_img = np.fliplr(depth_img)

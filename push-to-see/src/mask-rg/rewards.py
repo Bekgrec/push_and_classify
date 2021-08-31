@@ -2,6 +2,7 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 
 NON_DETECTION_PUNISHMENT = -0.02
 # EXTRA_DETECTION_PUNISHMENT = 0.0 #-0.01
@@ -113,7 +114,7 @@ class RewardGenerator(object):
         self.valid_boxes = []
         self.num_valid_pred = 0
 
-    def set_element(self, pred_tensor, gt):
+    def set_element(self, pred_tensor, gt, pixel_label):
         # list of objects - All data had been cleaned and obj_ids are in ordered
         obj_ids = np.unique(gt)
         # Remove background (i.e. 0)
@@ -125,21 +126,32 @@ class RewardGenerator(object):
         self.height = gt.shape[0]
         self.width = gt.shape[1]
         self.gts = np.zeros((self.num_objs, self.height, self.width), dtype=np.uint8)
+
+        self.gts_label = []
+
         for i in range(self.num_objs):
-            self.gts[i][np.where(gt == i + 1)] = 1
+            self.gts[i][np.where(gt == pixel_label[i][0])] = 1
+            # masks[i][np.where(mask == pixel_label[i][0])] = 1
+            self.gts_label.append(pixel_label[i][1])
 
         self.scores = pred_tensor[0]['scores']
         self.masks = pred_tensor[0]['masks']
         self.boxes = pred_tensor[0]['boxes']
+        self.labels = pred_tensor[0]['labels']
         self.num_pred = self.masks.shape[0]
         self.valid_masks = []
         self.valid_boxes = []
         self.num_valid_pred = 0
 
+        self.valid_labels = []
+
         for pred_no in range(0, self.num_pred):
             if self.scores[pred_no] > self.confidence_threshold:
                 self.valid_masks.append(self.masks[pred_no])
                 self.valid_boxes.append(self.boxes[pred_no])
+
+                self.valid_labels.append(self.labels[pred_no])
+
                 self.num_valid_pred += 1
 
     def f1_reward(self):
@@ -162,14 +174,31 @@ class RewardGenerator(object):
             return [0, 0, 0]
         return [iou, area_i, area_u]
 
+    def print_alignedmask_gt(self):
+        res, related_labels = self._detect_mask_id()
+        num_gt = np.shape(self.gts)[0]
+        for i in range(num_gt):
+            plt.subplot(num_gt, 2, 2*i+1)
+            plt.imshow(np.squeeze(self.gts[i]))
+
+            if not (int(res[i][0]) == 254 or int(res[i][0]) == 255):
+                plt.subplot(num_gt, 2, 2*i+2)
+                plt.imshow(np.squeeze(self.valid_masks[int(res[i][0])], 0))
+            else:
+                plt.subplot(num_gt, 2, 2*i+2)
+                plt.imshow(np.zeros((1024, 1024)))
+        # plt.tight_layout()
+        plt.show()
+
     def get_reward(self):
         # TODO add some change to consider the mask size in the reward calculation
-        res = self._detect_mask_id()
-        # self.print_masks()
-        # if self.num_valid_pred - self.num_objs > 0:
-        #     extra_pun = (self.num_valid_pred - self.num_objs) * EXTRA_DETECTION_PUNISHMENT
-        # else:
-        #     extra_pun = 0
+        res, related_labels = self._detect_mask_id()
+
+        wrong_classified = 0
+        for ind, ele in enumerate(related_labels):
+            if related_labels[ind] != self.gts_label[ind]:
+                wrong_classified += 1
+
         if self.num_objs > 0:  # and len(res) <= self.num_objs:
             sum_iou = np.sum(res, axis=0)
             sum_iou = sum_iou[1]
@@ -186,6 +215,7 @@ class RewardGenerator(object):
                                                                                            self.num_valid_pred))
             print('Number of correct detections (masking threshold {:.2f}) --> {:d}'.format(self.mask_threshold,
                                                                                               true_detections))
+            print(f'Number of wrong classified objects: --> {wrong_classified}')
             print('NEGATIVE SCORE: --> {:.2f} (cnst {:.2f} x non-detected '.format(num_non_detected * NON_DETECTION_PUNISHMENT,
                                                                         NON_DETECTION_PUNISHMENT) + BColors.FAIL +
                                                                         ' {:d}'.format(num_non_detected) +  BColors.ENDC + ')')
@@ -208,20 +238,31 @@ class RewardGenerator(object):
     def _detect_mask_id(self):
 
         results = []
+        # final best match mask for each gts' predicted class label
+        matched_mask_label = []
         pred_order = np.zeros((self.num_objs, 2), dtype=np.float32)
 
         for idx_gt, gt in enumerate(self.gts):
+            all_matched_label = []
             for inx_pred, mask in enumerate(self.valid_masks):
+
                 pred_arr = np.asarray(mask.cpu().detach()).reshape((self.height, self.width))
+                # a = np.unique(pred_arr)
                 pred_arr = np.where(pred_arr > self.mask_threshold, 1, 0)
                 res = self._jaccard(gt, pred_arr)
                 if res[0] > 0:
                     results.append([inx_pred, res[0]])
+                    all_matched_label.append(self.valid_labels[inx_pred])
+
 
             if not results == []:
                 res_arr = np.asarray(results)
                 max_index = np.argmax(res_arr, axis=0)
                 max_index = max_index[1]
+
+                best_matched_mask_predicted_label = int(all_matched_label[max_index])
+                matched_mask_label.append(best_matched_mask_predicted_label)
+
                 if res_arr[max_index][1] > self.mask_threshold:
                     pred_order[idx_gt] = res_arr[max_index]
                 else:
@@ -229,52 +270,21 @@ class RewardGenerator(object):
             else:
                 pred_order[idx_gt] = [254, 0]
             results = []
-        return pred_order
-
-    # old version
-    # def _detect_mask_id(self):
-    #
-    #     results = []
-    #     gt_order = np.zeros((self.num_valid_pred, 2), dtype=np.float32)
-    #
-    #     for inx_pred, mask in enumerate(self.valid_masks):
-    #         for idx_gt, gt in enumerate(self.gts):
-    #             mask_arr = np.asarray(mask.cpu().detach()).reshape((self.height, self.width))
-    #             mask_arr = np.where(mask_arr > self.mask_threshold, 1, 0)
-    #             res = self._jaccard(gt, mask_arr)
-    #             if res[0] > 0:
-    #                 results.append([idx_gt, res[0]])
-    #
-    #         if not results == []:
-    #             res_arr = np.asarray(results)
-    #             max_index = np.argmax(res_arr, axis=0)
-    #             max_index = max_index[1]
-    #             if res_arr[max_index][1] > self.mask_threshold:
-    #                 asd = res_arr[max_index]
-    #                 gt_order[inx_pred] = res_arr[max_index]
-    #             else:
-    #                 gt_order[inx_pred] = [255, 0]
-    #         else:
-    #             gt_order[inx_pred] = [254, 0]
-    #         results = []
-    #
-    #     return gt_order
+        return pred_order, matched_mask_label
 
     def print_masks(self):
-        # masks = input_tensor[0]['masks']
-        # scores = input_tensor[0]['scores']
-        # num_pred = masks.shape[0]
-        num_masks = 0
         all = np.zeros((self.height, self.width), dtype=np.uint8)
-        for mask in range(self.num_pred):
-            if self.scores[mask] > self.confidence_threshold:
-                # TODO if cuda, add a control here
-                mask_arr = np.asarray(self.masks[mask].cpu().detach()).reshape((self.height, self.width))
-                mask_arr = np.where(mask_arr > self.mask_threshold, 1, 0)
-                all[np.where(mask_arr > 0)] = num_masks
-                num_masks += 1
-        # plt.imshow(all)
-        # plt.show()
+        res, related_labels = self._detect_mask_id()
+        num_gt = np.shape(self.gts)[0]
+        for i in range(num_gt):
+            if not (int(res[i][0]) == 254 or int(res[i][0]) == 255):
+                mas = np.squeeze(self.valid_masks[int(res[i][0])], 0)
+                mas = np.where(mas > self.mask_threshold, 1, 0)
+                # +5 for better difference view
+                all[np.where(mas > 0)] = i+5
+        plt.imshow(all, cmap=matplotlib.cm.gray)
+        plt.show()
+
         # print('num masks that have a score higher than %.02f --> ' % self.confidence_threshold, num_masks)
         return all
 

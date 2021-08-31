@@ -7,6 +7,7 @@ import torchvision.transforms as T
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import utils
+from collections import Counter
 
 
 class PushAndGraspDataset(object):
@@ -42,14 +43,13 @@ class PushAndGraspDataset(object):
 
 
     def __getitem__(self, idx):
-
         # set getter path
         img_path = os.path.join(self.imgs_path, self.imgs[idx])
         mask_path = os.path.join(self.masks_path, self.masks[idx])
         masks_info_path = os.path.join(self.masks_info_path, self.masks_infor[idx])
 
         pixel_label = np.load(masks_info_path)
-        #print(pixel_label)
+        print(pixel_label)
 
 
         # read an image
@@ -71,8 +71,11 @@ class PushAndGraspDataset(object):
         # read a GT mask and reformat
         mask = cv2.imread(mask_path)
         mask = np.asarray(mask)
+        print(np.shape(mask))
         mask = mask[:, :, :1]
+        print(np.shape(mask))
         mask = np.squeeze(mask, axis=2)
+        print(np.shape(mask))
         # 1024 x 1024
         # print(np.shape(mask))
 
@@ -80,18 +83,23 @@ class PushAndGraspDataset(object):
         obj_ids = np.unique(mask)
         # Remove background (i.e. 0)
         obj_ids = obj_ids[1:]
-        #print(obj_ids)
+        print(obj_ids)
 
         # combine the masks TODO read height and weight from img
         num_objs = len(obj_ids)
         #print(f'num_objs: {num_objs}')
         masks = np.zeros((num_objs, 1024, 1024), dtype=np.uint8)
+
         for i in range(num_objs):
             # masks[i][np.where(mask == i+1)] = 1
             # masks[i][np.where(mask == pixel_label[i][0])] = 1
             masks[i][np.where(mask == pixel_label[i][0])] = 1
             # masks[i][np.where(mask != pixel_label[i][0])] = 0
-        # print(np.shape(masks))
+        print(f'after replace {np.unique(masks)}')
+
+        for i in range(num_objs):
+            a = Counter(masks[i].flatten())
+            print(a)
 
         # get bounding box coordinates for each mask
         boxes = []

@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 import sys
-sys.path.append('/home/baris/Workspace/push-to-see/src/mask-rg')
+import os
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(cur_dir, "../mask-rg/"))
+from mask_rg import MaskRG
 from mask_rg import MaskRG
 import time
-import os
+
 import random
 import threading
 import matplotlib.pyplot as plt
@@ -265,7 +268,7 @@ def main():
             # Get ground truth segmentation masks
             color_m_rg, depth_m_rg, [segmentation_mask, num_objects] = robot.get_data_mask_rg()
 
-            plt.imsave('ground_truth.png', segmentation_mask)
+            plt.imsave('    ground_truth.png', segmentation_mask)
             # plt.imsave('color_img.png', color_m_rg)
             # plt.imsave('depth_img.png', depth_m_rg)
 
@@ -281,7 +284,7 @@ def main():
             pred_ids, seg_reward, err_rate = mask_rg.get_current_rewards()
             printout = mask_rg.print_segmentation(pred_ids)
             plt.imsave('mask_pred_diff.png', printout)
-            # all_masks = mask_rg.print_masks()
+            # all_masks = mask-rg.print_masks()
             # plt.imsave('mask_pred_all.png', all_masks)
 
             #TODO check below line
@@ -579,7 +582,7 @@ def main():
             printout = mask_rg.print_segmentation(pred_ids)
             plt.imsave('mask_pred_diff.png', printout)
             print('Number of the objects left in the scene after pushing action -->', num_objects_action.size - 1)
-            # all_masks = mask_rg.print_masks()
+            # all_masks = mask-rg.print_masks()
             # plt.imsave('mask_pred_all.png', all_masks)
 
         trainer.iteration += 1

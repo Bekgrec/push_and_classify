@@ -23,13 +23,14 @@ def main():
 
     # create dataset objects and set the model
     dataset = PushAndGraspDataset(configuration)
-    print(dataset.__len__())
+    get_0 = dataset.__getitem__(0)
+    #print(get_0)
     #dataset.__getitem__(0)
     #print(dataset.__dict__)
 
     # Training:
     model.set_data(dataset)
-    model.train_model()
+    #model.train_model()
     #model.evaluate_model()
 
     # Evaluation:

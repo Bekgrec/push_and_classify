@@ -18,6 +18,7 @@ color_space = np.asarray([[78.0, 121.0, 167.0],  # blue
 # FILE = '/home/baris/Workspace/push-to-see/logs/2021-01-30.04:04:47-keep-14k/transitions/loss-value.log.txt'
 FILE = '/home/baris/Workspace/push-to-see/logs/2021-01-30.04:04:47-keep-14k/mask-rg/segmentation.txt'
 
+
 FILE_IT = '/home/baris/Workspace/push-to-see/logs/2021-01-30.04:04:47-keep-14k/session_success_fail_list.txt'
 
 # FILE_IT= '/home/baris/Workspace/push-to-see/logs/2021-06-01.20:47:53/session_success_fail_list.txt'

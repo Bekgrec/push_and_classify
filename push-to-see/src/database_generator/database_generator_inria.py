@@ -426,7 +426,7 @@ class DatabaseGenerator(object):
                                                                                 shapes,
                                                                                 bytearray(),
                                                                                 vrep.simx_opmode_blocking)
-                time.sleep(0.05)
+                time.sleep(0.03)
                 # print(ret_i)
                 # wait responose from remote api
                 while not ret_i:

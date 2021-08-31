@@ -4,9 +4,11 @@ import numpy as np
 import torchvision.transforms as T
 import torch
 from rewards import RewardGenerator
+import os
 
 #TODO don't add the absolute path here!
-CONFIG_PATH = '/home/baris/Workspace/push-to-see/model_config.yaml'
+
+CONFIG_PATH = os.path.abspath(os.path.join(os.getcwd(), "../..")) + '/model_config.yaml'
 
 class MaskRG(object):
 
@@ -21,14 +23,16 @@ class MaskRG(object):
             self.prediction = None
             self.gt = None
 
-    def set_reward_generator(self, depth_image, gt_segmentation):
+    def set_reward_generator(self, depth_image, gt_segmentation, pixel_class):
         # TODO check if you need to convert depth image with PIL
+        # all vals are in between 0 to 250
         depth_image = np.round(depth_image / 20).astype(np.uint8)
         depth_image = np.repeat(depth_image.reshape(1024, 1024, 1), 3, axis=2)
         with torch.no_grad():
             tt = T.ToTensor()
             depth_tensor = tt(depth_image)
-            depth_tensor = depth_tensor.cuda()
+            if torch.cuda.is_available():
+                depth_tensor = depth_tensor.cuda()
         # print(depth_tensor.requires_grad)
             self.prediction = self.model.eval_single_img([depth_tensor])
 
@@ -39,7 +43,7 @@ class MaskRG(object):
         # self.gt = np.squeeze(gt_segmentation, axis=2)
         self.gt = gt_segmentation
 
-        self.rg.set_element(self.prediction, self.gt)
+        self.rg.set_element(self.prediction, self.gt, pixel_class)
 
     def get_current_rewards(self):
         return self.rg.get_reward()
