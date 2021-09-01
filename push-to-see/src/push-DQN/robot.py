@@ -160,7 +160,8 @@ class Robot(object):
         while ret != 0:
             ret, res, data = vrep.simxGetVisionSensorImage(self.sim_client, mask_cam_handle, 0,
                                                       vrep.simx_opmode_oneshot_wait)
-        print(np.shape(data))
+        print(np.unique(data))
+
         seg_mask_temp = np.reshape(data, (res[1], res[0], 3))
         seg_mask_temp = seg_mask_temp[:, :, :1]
         seg_mask_temp = np.reshape(seg_mask_temp, (res[1], res[0]))

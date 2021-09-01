@@ -39,9 +39,9 @@ convex_class:
   18: screwdriver
   19: screwdriver
   20: screwdriver
-  21: woodblock
-  22: woodblock
-  23: woodblock
+  21: hammer
+  22: screwdriver
+  23: scissor
   24: wrench
   25: wrench
   26: wrench
