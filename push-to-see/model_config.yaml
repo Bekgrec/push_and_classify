@@ -1,5 +1,5 @@
 model:
-  path: ~/saved_models/
+  path: /media/ubuntu/058f596a-b5ac-4f12-8064-96183f20219a/saved_models/
   # set  'file:' to 'new' for training from scratch, 'pretrained' for transfer learning,
   # or the name of the save model file which is placed on the above path folder.
   file: my_model_inria_v2_0ep__epoch_no_35_2021-08-30.04:32:34.pth #new
@@ -10,7 +10,7 @@ model:
     batch_size: 5
     backbone: resnet50
     backbone_pretrained: True
-    cuda_available: False
+    cuda_available: True
     train_instances: 10000
     test_instances: 1000
     # last png name + 1
