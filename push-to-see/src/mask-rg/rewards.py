@@ -3,6 +3,7 @@ from pycocotools.cocoeval import COCOeval
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+from sklearn import metrics
 
 NON_DETECTION_PUNISHMENT = -0.02
 # EXTRA_DETECTION_PUNISHMENT = 0.0 #-0.01
@@ -198,6 +199,10 @@ class RewardGenerator(object):
         for ind, ele in enumerate(related_labels):
             if related_labels[ind] != self.gts_label[ind]:
                 wrong_classified += 1
+                
+        wrong_percent = wrong_classified / len(self.gts)
+        wrong_class_punish = 0.1 * wrong_percent
+        
 
         if self.num_objs > 0:  # and len(res) <= self.num_objs:
             sum_iou = np.sum(res, axis=0)
@@ -207,16 +212,18 @@ class RewardGenerator(object):
             true_detections = np.count_nonzero(res, axis=0)
             true_detections = true_detections[1]
             num_non_detected = self.num_objs - true_detections
-            reward = reward_iou + num_non_detected * NON_DETECTION_PUNISHMENT #+ extra_pun
+            reward = reward_iou + num_non_detected * NON_DETECTION_PUNISHMENT - wrong_class_punish #+ extra_pun
 
             print(BColors.HEADER + '--------------------------- MASK-RG RETURNS ----------------------------' + BColors.ENDC)
             print('Number of objects in GT --> ', self.num_objs)
+            print(f'Wrong classified: {wrong_classified}')
             print('Number of possible objects (confidence threshold {:.2f}) --> {:d}'.format(self.confidence_threshold,
                                                                                            self.num_valid_pred))
             print('Number of correct detections (masking threshold {:.2f}) --> {:d}'.format(self.mask_threshold,
                                                                                               true_detections))
-            print(f'Number of wrong classified objects: --> {wrong_classified}')
-            print('NEGATIVE SCORE: --> {:.2f} (cnst {:.2f} x non-detected '.format(num_non_detected * NON_DETECTION_PUNISHMENT,
+                                                                                                
+            print(f'Wrong classified objects punishment: --> -{wrong_class_punish}')
+            print('NEGATIVE SCORE: --> {:.2f} (cnst {:.2f} x non-detected  '.format(num_non_detected * NON_DETECTION_PUNISHMENT,
                                                                         NON_DETECTION_PUNISHMENT) + BColors.FAIL +
                                                                         ' {:d}'.format(num_non_detected) +  BColors.ENDC + ')')
 

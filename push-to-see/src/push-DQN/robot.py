@@ -117,7 +117,11 @@ class Robot(object):
         curr_num_obj = np.random.random_integers(self.min_num_obj, self.max_num_obj)
         print('NUMBER OF OBJECTS DROPPED (range: {:d} - {:d}) --> {:d},'.format(self.min_num_obj, self.max_num_obj,
                                                                                curr_num_obj))
-        self.add_objects(curr_num_obj)
+        add_res = self.add_objects(curr_num_obj)
+        if add_res[0] == -1:
+            return -1
+        else:
+            return 0
 
 
     def check_sim(self):
@@ -129,8 +133,11 @@ class Robot(object):
                  and gripper_position[2] > self.workspace_limits[2][0] and gripper_position[2] < self.workspace_limits[2][1]
         if not sim_ok:
             print('Simulation unstable. Restarting environment.')
-            self.restart_sim()
+            res = self.restart_sim()
+            if res == -1:
+                return -1
             self.setup_sim_camera()
+        return 0
 
     def get_obj_positions(self):
 
@@ -158,8 +165,11 @@ class Robot(object):
         ret, res, data = vrep.simxGetVisionSensorImage(self.sim_client, mask_cam_handle, 0,
                                                       vrep.simx_opmode_oneshot_wait)
         while ret != 0:
+            time.sleep(0.05)
+            print('waiting')
             ret, res, data = vrep.simxGetVisionSensorImage(self.sim_client, mask_cam_handle, 0,
                                                       vrep.simx_opmode_oneshot_wait)
+            print(ret)
         print(np.unique(data))
 
         seg_mask_temp = np.reshape(data, (res[1], res[0], 3))
@@ -334,6 +344,8 @@ class Robot(object):
                                                                           vrep.simx_opmode_blocking)
         # encounted sim_ret = 3, nothing returned as empty color img
         while sim_ret != 0:
+            time.sleep(0.05)
+            print('waiting')
             sim_ret, resolution, raw_image_gt = vrep.simxGetVisionSensorImage(self.sim_client, self.cam_handle_ortho, 0,
                                                                           vrep.simx_opmode_blocking)
         color_img_m_rg = np.asarray(raw_image_gt)
@@ -350,6 +362,8 @@ class Robot(object):
                                                                                    self.cam_handle_ortho,
                                                                                    vrep.simx_opmode_blocking)
         while sim_ret != 0:
+            time.sleep(0.05)
+            print('waiting')
             sim_ret, resolution, depth_buffer_gt = vrep.simxGetVisionSensorDepthBuffer(self.sim_client,
                                                                                    self.cam_handle_ortho,
                                                                                    vrep.simx_opmode_blocking)
@@ -373,6 +387,8 @@ class Robot(object):
         # Get color image from simulation
         sim_ret, resolution, raw_image = vrep.simxGetVisionSensorImage(self.sim_client, self.cam_handle, 0, vrep.simx_opmode_blocking)
         while sim_ret != 0:
+            time.sleep(0.05)
+            print('waiting')
             sim_ret, resolution, raw_image = vrep.simxGetVisionSensorImage(self.sim_client, self.cam_handle, 0, vrep.simx_opmode_blocking)
         color_img = np.asarray(raw_image)
         color_img.shape = (resolution[1], resolution[0], 3)
@@ -385,6 +401,8 @@ class Robot(object):
         # Get depth image from simulation
         sim_ret, resolution, depth_buffer = vrep.simxGetVisionSensorDepthBuffer(self.sim_client, self.cam_handle, vrep.simx_opmode_blocking)
         while sim_ret != 0:
+            time.sleep(0.05)
+            print('waiting')
             sim_ret, resolution, depth_buffer = vrep.simxGetVisionSensorDepthBuffer(self.sim_client, self.cam_handle, vrep.simx_opmode_blocking)
         depth_img = np.asarray(depth_buffer)
         depth_img.shape = (resolution[1], resolution[0])

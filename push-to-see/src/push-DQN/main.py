@@ -235,7 +235,8 @@ def main():
         iteration_time_0 = time.time()
         session_counter += 1
         # Make sure simulation is still stable (if not, reset simulation)
-        robot.check_sim()
+        while robot.check_sim() == -1:
+            robot.check_sim()
 
         # Get latest RGB-D image
         color_img, depth_img_raw = robot.get_camera_data()
@@ -384,7 +385,7 @@ def main():
                 trainer.reward_value_log.append([prev_reward_value])
                 logger.write_to_log('reward-value', trainer.reward_value_log)
 
-                logger.save_mask_rg_returns([seg_vals, num_objects_action.size-1])
+                logger.save_mask_rg_returns([seg_vals])
 
                 # Backpropagate
                 # forward pass only for the best scene between 16 ('prev best pix ind')
