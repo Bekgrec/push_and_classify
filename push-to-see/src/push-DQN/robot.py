@@ -188,13 +188,21 @@ class Robot(object):
         pix_lab = []
 
         for i in range(0, objects.size):
+            negative_flag = False
+            # negative in vrep some cases
+            if objects[i] < -100:
+                objects[i] = 256 + objects[i]
+                negative_flag = True
             label = self.obj_inf['class_label'][self.handle_objclass[objects[i]]]
             pix_lab.append([objects[i], label])
             # if not objects[i] == 0:
             pixel_value = 255 - i
             obj_class = self.handle_objclass[objects[i]]
             self.pixel_class[pixel_value] = obj_class
-            new_mask[np.where(seg_mask == objects[i])] = objects[i]
+            if negative_flag:
+                new_mask[np.where(seg_mask == objects[i] - 256)] = objects[i]
+            else:
+                new_mask[np.where(seg_mask == objects[i])] = objects[i]
         saved_infor = np.array(pix_lab)
 
         new_mask = np.flip(new_mask, axis=0)

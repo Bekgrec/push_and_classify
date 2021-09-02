@@ -44,7 +44,6 @@ def main():
 
     # plt.ion()
     mask_rg = MaskRG(config['detection_thresholds']['confidence_threshold'], config['detection_thresholds']['mask_threshold'])
-    print(mask_rg)
     session_success_threshold = config['detection_thresholds']['session_success_threshold']
 
     snapshot_file = os.path.join(config['model']['path'], config['model']['file']) if config['model']['file'] != 'new' else None

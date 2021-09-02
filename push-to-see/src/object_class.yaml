@@ -1,6 +1,6 @@
 overview:
   num_classes: 10
-  total_convex: 30
+  total_convex: 35
 
 # in mask rcnn
 class_label:
@@ -39,15 +39,20 @@ convex_class:
   18: screwdriver
   19: screwdriver
   20: screwdriver
-  21: woodblock
-  22: woodblock
-  23: woodblock
+  21: screwdriver
+  22: wrench
+  23: meatcan
   24: wrench
   25: wrench
   26: wrench
   27: meatcan
   28: meatcan
   29: meatcan
+  30: scissor
+  31: banana
+  32: spoon
+  33: hammer
+  34: clamp
 
 
   
