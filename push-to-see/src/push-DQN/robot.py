@@ -411,7 +411,7 @@ class Robot(object):
 
         # Adjust pushing point to be on tip of finger
         # there is another adjustment on z-axis below, too many adjustments... (pushing_point_margin). fadAlso in the main file (local_region)
-        position[2] = position[2] + 0.026 # the adjustment value in the original code is +0.026
+        # position[2] = position[2] + 0.047 # the adjustment value in the original code is +0.026
 
         # Compute pushing direction
         push_orientation = [1.0, 0.0]

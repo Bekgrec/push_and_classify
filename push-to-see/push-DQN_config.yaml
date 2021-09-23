@@ -11,7 +11,11 @@ logging:
   path: Default # Set 'Default' for ./log
   continue_logging: False # to continue logging from previous session
   save_visualizations: True # to save visualisations of FCN predictions
+<<<<<<< Updated upstream
   snapshot_saving_rate: 100 # to define how often the model weights will be saved (if is_testing is True).
+=======
+  snapshot_saving_rate: 40 # to define how often the model weights will be saved (if is_testing is False).
+>>>>>>> Stashed changes
 
 environment:
   workspace_limits: [[-0.724, -0.276], [-0.224, 0.224], [-0.0001, 0.4]] # to define workspace limits in robot coordinates (Cols: min max, Rows: x y z)
@@ -21,7 +25,11 @@ environment:
   min_num_objects: 28 #26 # Minimum number of objects that will be dropped in the simulation
   max_num_objects: 28 #32 # Maximum number of objects that will be dropped in the simulation (LIMIT 72!) #TODO current limit is less than 72 --> change the colour space of printed mask diff
                       # The total number of objects per scene will be randomised between min and max!
+<<<<<<< Updated upstream
   session_limit: 30 # The number of iterations in each session. If a task cannot be solved within this limit, it's considered as a fail, otherwise success
+=======
+  session_limit: 60 # The number of iterations in each session. If a task cannot be solved within this limit, it's considered as a fail, otherwise success
+>>>>>>> Stashed changes
 
 setup:
   experience_replay: False # (NOT IMPLEMENTED YET!) to use prioritized experience replay
