@@ -22,11 +22,8 @@ environment:
   min_num_objects: 28 #26 # Minimum number of objects that will be dropped in the simulation
   max_num_objects: 28 #32 # Maximum number of objects that will be dropped in the simulation (LIMIT 72!) #TODO current limit is less than 72 --> change the colour space of printed mask diff
                       # The total number of objects per scene will be randomised between min and max!
-<<<<<<< Updated upstream
   session_limit: 30 # The number of iterations in each session. If a task cannot be solved within this limit, it's considered as a fail, otherwise success
-=======
-  session_limit: 60 # The number of iterations in each session. If a task cannot be solved within this limit, it's considered as a fail, otherwise success
->>>>>>> Stashed changes
+
 
 setup:
   experience_replay: False # (NOT IMPLEMENTED YET!) to use prioritized experience replay
