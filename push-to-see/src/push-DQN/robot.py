@@ -26,7 +26,7 @@ class Robot(object):
         self.max_num_obj = max_num_obj  # 24
 
         # dropping params
-        self.drop_limits = np.asarray([[-0.6, -0.4], [-0.15, 0.15], [-0.2, -0.1]])
+        self.drop_limits = np.asarray([[-0.55, -0.45], [-0.15, 0.15], [-0.2, -0.1]])
         self.DROP_HEIGHT = 0.2
 
         # Make sure to have the server side running in V-REP:
@@ -480,7 +480,7 @@ class Robot(object):
 
         # Adjust pushing point to be on tip of finger
         # there is another adjustment on z-axis below, too many adjustments... (pushing_point_margin). fadAlso in the main file (local_region)
-        position[2] = position[2] + 0.026 # the adjustment value in the original code is +0.026
+        position[2] = position[2] # the adjustment value in the original code is +0.026
 
         # Compute pushing direction
         push_orientation = [1.0, 0.0]

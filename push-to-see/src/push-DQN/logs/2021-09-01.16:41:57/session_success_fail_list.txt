@@ -1,1 +1,0 @@
-Session no 1 --> after 31 pushing actions --> FAIL!  (tr_it --> 30) 

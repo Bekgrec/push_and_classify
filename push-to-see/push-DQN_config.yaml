@@ -18,8 +18,8 @@ environment:
                                                                         # (default val [[-0.724, -0.276], [-0.224, 0.224], [-0.0001, 0.4]])
   heightmap_resolution: 0.002 # meters per pixel of heightmap (default val 0.002)
 
-  min_num_objects: 27 #26 # Minimum number of objects that will be dropped in the simulation
-  max_num_objects: 33 #32 # Maximum number of objects that will be dropped in the simulation (LIMIT 72!) #TODO current limit is less than 72 --> change the colour space of printed mask diff
+  min_num_objects: 20 #26 # Minimum number of objects that will be dropped in the simulation
+  max_num_objects: 25 #32 # Maximum number of objects that will be dropped in the simulation (LIMIT 72!) #TODO current limit is less than 72 --> change the colour space of printed mask diff
                       # The total number of objects per scene will be randomised between min and max!
   session_limit: 150 # The number of iterations in each session. If a task cannot be solved within this limit, it's considered as a fail, otherwise success
 

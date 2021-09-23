@@ -247,46 +247,15 @@ class DatabaseGenerator(object):
 
         for i in range(0, objects.size):
             # ----------------- #
+            if objects[i] < -100:
+                objects[i] = 256 + objects[i]
+
             label = self.obj_inf['class_label'][self.handle_objclass[objects[i]]]
             #print(label)
             pix_lab.append([objects[i], label])
 
-            #pix_lab.append(self.obj_inf['class_label'][self.handle_objclass[objects[i]]])
-            # print(f'class label for obj {i} is: {a}, handle id {objects[i]}')
 
-            # pixel value of object i equals handle id of object in vrep: stored in objects[i]
-            obj_mask = new_mask.copy()
-            obj_mask[np.where(seg_mask == objects[i])] = 1
-            obj_mask[np.where(seg_mask != objects[i])] = 0
-            obj_mask = np.flip(obj_mask, axis=0)
 
-            pos = np.where(obj_mask == 1)
-            xmin = np.min(pos[1])
-            xmax = np.max(pos[1])
-            ymin = np.min(pos[0])
-            ymax = np.max(pos[0])
-            print(xmin, xmax, ymin, ymax, self.obj_inf['class_label'][self.handle_objclass[objects[i]]])
-            """
-            if i == 0:
-                res_cor = np.array([xmin, xmax, ymin, ymax])
-                res_cor = np.reshape(res_cor, (1, 4))
-            else:
-                cur_cor = np.array([xmin, xmax, ymin, ymax])
-                cur_cor = np.reshape(cur_cor, (1, 4))
-                res_cor = np.vstack((res_cor, cur_cor))
-            print(res_cor.shape)
-            """
-
-            """
-            # res_mask: masks for each objects, all binary
-            if i == 0:
-                # (1, 1024, 1024)
-                res_mask = np.reshape(obj_mask, (1, np.shape(obj_mask)[0], np.shape(obj_mask)[0]))
-            else:
-                cur_mask = np.reshape(obj_mask, (1, np.shape(obj_mask)[0], np.shape(obj_mask)[0]))
-                res_mask = np.vstack((res_mask, cur_mask))
-            """
-            # ----------------- #
 
             pixel_value = 255 - i
             obj_class = self.handle_objclass[objects[i]]
