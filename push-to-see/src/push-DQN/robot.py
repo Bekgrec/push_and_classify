@@ -26,7 +26,7 @@ class Robot(object):
         self.max_num_obj = max_num_obj  # 24
 
         # dropping params
-        self.drop_limits = np.asarray([[-0.55, -0.45], [-0.15, 0.15], [-0.2, -0.1]])
+        self.drop_limits = np.asarray([[-0.55, -0.45], [-0.08, 0.08], [-0.2, -0.1]])
         self.DROP_HEIGHT = 0.2
 
         # Make sure to have the server side running in V-REP:
@@ -210,65 +210,6 @@ class Robot(object):
         print(f'objs pixel in mask {objs}')
         return new_mask, objs, saved_infor
 
-    # def _get_segmentation_mask(self, mask_cam_handle):
-    #
-    #     # if self.plane_handle == 0 or self.floor_handle == 0:
-    #
-    #     # Get handle ids of the floor and the plane (at the moment Plane --> 19, Floor --> 10).
-    #     # The related pixels will be removed whilst calculating the ground segmentation
-    #     # ret_plane, self.plane_handle = vrep.simxGetObjectHandle(self.sim_client, 'Plane', vrep.simx_opmode_blocking)
-    #     #
-    #     # ret_floor, self.floor_handle = vrep.simxGetObjectHandle(self.sim_client, 'ResizableFloor_5_25_visibleElement',
-    #     #                                              vrep.simx_opmode_blocking)
-    #
-    #
-    #         # if not (ret_plane == 0 or ret_floor == 0):
-    #     # self.plane_handle = 19
-    #     # self.floor_handle = 10
-    #
-    #     ret, res, data = vrep.simxGetVisionSensorImage(self.sim_client, mask_cam_handle, 0,
-    #                                                   vrep.simx_opmode_oneshot_wait)
-    #
-    #     time.sleep(0.01)
-    #     # print('PING TIME -->  ', vrep.simxGetPingTime(self.sim_client))
-    #
-    #     seg_mask_temp = np.reshape(data, (res[1], res[0], 3))
-    #     seg_mask_temp = seg_mask_temp[:, :, :1]
-    #     seg_mask_temp = np.reshape(seg_mask_temp, (res[1], res[0]))
-    #     asd = np.unique(seg_mask_temp)
-    #     seg_mask = seg_mask_temp.copy()
-    #     # print('Object handle ids  -->  ', asd, ' TOTAL = ', asd.size)
-    #
-    #     seg_mask = self._remove_bg_gt(seg_mask)
-    #     objects = np.unique(seg_mask)
-    #     objects = np.sort(objects)
-    #     for i in range(0, objects.size):
-    #         if not objects[i] == 0:
-    #             seg_mask[np.where(seg_mask == objects[i])] = i
-    #
-    #     seg_mask = np.flip(seg_mask, axis=1)
-    #     # includes 0 as background
-    #     objs = np.unique(seg_mask)
-    #     return seg_mask, objs
-
-    # @staticmethod
-    # def _remove_bg_gt(segmask):
-    #     # ret_plane, plane_handle = vrep.simxGetObjectHandle(self.sim_client, 'Plane', vrep.simx_opmode_blocking)
-    #     #
-    #     # ret_floor, floor_handle = vrep.simxGetObjectHandle(self.sim_client, 'ResizableFloor_5_25_visibleElement',
-    #     #                                              vrep.simx_opmode_blocking)
-    #
-    #     # remove two elements that cover max numbers of pixels (plane and floor)
-    #     # just the background!
-    #     elements, counts = np.unique(segmask, return_counts=True)
-    #     background_index = np.argmax(counts)
-    #     new_mask = np.where(segmask == elements[background_index], 0, segmask)
-    #
-    #     # this is not necessary as plane is removed from sensor
-    #     # counts[background_index] = 0
-    #     # background_index = np.argmax(counts)
-    #     # new_mask = np.where(new_mask == elements[background_index], 0, new_mask)
-    #     return new_mask
 
     def add_objects(self, num_obj_heap):
 

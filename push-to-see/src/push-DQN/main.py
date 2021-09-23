@@ -39,6 +39,8 @@ class BColors:
 
 def main():
 
+    session_used = []
+
     with open(CONF_PATH) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -487,6 +489,8 @@ def main():
 
         # SUCCESS
         if nonlocal_variables['session_success']:
+            session_used.append(session_counter)
+            print(f'session used overall {session_used}')
             if not success_without_push:
                 success_fail_record.append([session_counter, 1])
                 # TODO 'session counter - 1' cause actions are done on the previous iteration, I need to change the location
@@ -519,7 +523,8 @@ def main():
         #  to calculate rewards at the 1st iteration. "session_counter > 29" means after 31 sessions including the 0th
         #  session or 30 training sessions
         if session_counter > session_limit:
-
+            session_used.append(session_counter)
+            print(f'session used overall {session_used}')
             success_fail_record.append([session_counter, 0])
             logger.save_session_success_fail('Session no ' + str(len(success_fail_record)) + ' --> after '
                                              + str(session_counter) +
